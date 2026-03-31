@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-const deviceSchema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   name: String,
-  assignedTo: String
+  assignedTo: String,
 });
 
-export default mongoose.model("Device", deviceSchema);
+export default mongoose.models.Device || mongoose.model("Device", schema);

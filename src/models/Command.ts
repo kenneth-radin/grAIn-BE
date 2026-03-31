@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
-const commandSchema = new mongoose.Schema({
+const schema = new mongoose.Schema({
   deviceId: String,
   command: String,
   value: String,
-  createdAt: { type: Date, default: Date.now }
+  executed: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model("Command", commandSchema);
+export default mongoose.models.Command || mongoose.model("Command", schema);
