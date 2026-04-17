@@ -121,41 +121,58 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$n
 ;
 ;
 async function POST(req) {
-    await (0, __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["connectDB"])();
-    const { name, email, password } = await req.json();
-    if (!name || !email || !password) {
+    try {
+        await (0, __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$src$2f$lib$2f$db$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["connectDB"])();
+        const { name, email, password } = await req.json();
+        // Validate input
+        if (!name || !email || !password) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                message: "All fields required"
+            }, {
+                status: 400
+            });
+        }
+        // Check if user already exists
+        const existing = await __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$src$2f$models$2f$User$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].findOne({
+            email
+        });
+        if (existing) {
+            return __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+                message: "User already exists"
+            }, {
+                status: 400
+            });
+        }
+        //  Hash password
+        const hashed = await __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].hash(password, 10);
+        //  Create user
+        const user = await __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$src$2f$models$2f$User$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].create({
+            name,
+            email,
+            password: hashed
+        });
+        // Generate token
+        const token = __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$jsonwebtoken$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].sign({
+            id: user._id,
+            email: user.email
+        }, process.env.JWT_SECRET, {
+            expiresIn: "7d"
+        });
+        // Remove password before sending response
+        const { password: _pwd, ...userWithoutPassword } = user.toObject();
         return __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            message: "All fields required"
+            success: true,
+            token,
+            user: userWithoutPassword
+        });
+    } catch (error) {
+        console.error("Register error:", error);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
+            message: "Internal server error"
         }, {
-            status: 400
+            status: 500
         });
     }
-    const existing = await __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$src$2f$models$2f$User$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].findOne({
-        email
-    });
-    if (existing) {
-        return __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-            message: "User exists"
-        }, {
-            status: 400
-        });
-    }
-    const hashed = await __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$bcryptjs$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].hash(password, 10);
-    const user = await __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$src$2f$models$2f$User$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].create({
-        name,
-        email,
-        password: hashed
-    });
-    const token = __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$jsonwebtoken$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["default"].sign({
-        id: user._id
-    }, process.env.JWT_SECRET, {
-        expiresIn: "7d"
-    });
-    return __TURBOPACK__imported__module__$5b$project$5d2f$grAInBE$2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].json({
-        success: true,
-        token,
-        user
-    });
 }
 }),
 ];
